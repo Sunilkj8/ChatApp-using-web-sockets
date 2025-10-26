@@ -1,4 +1,3 @@
-import React from "react";
 import ChatPlatform from "./components/ChatPlatform";
 
 const App = () => {
