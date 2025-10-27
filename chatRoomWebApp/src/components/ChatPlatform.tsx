@@ -62,11 +62,11 @@ const ChatPlatform = () => {
         setIsJoined(true);
         setUserCount(joinJsonMessage.users);
       }
-      //@ts-ignore
-      // else
-      //   setMsg((prevVal) => {
-      //     return [...prevVal, ev.data];
-      //   });
+      else
+        //@ts-ignore
+        setMsg((prevVal) => {
+          return [...prevVal, ev.data];
+        });
     };
   }, []);
 
