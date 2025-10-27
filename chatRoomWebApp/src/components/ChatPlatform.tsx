@@ -55,18 +55,20 @@ const ChatPlatform = () => {
     setSocket(ws);
     ws.onmessage = (ev) => {
       //@ts-ignore
-      console.log(ev.data);
-      const joinJsonMessage = JSON.parse(ev.data);
-      console.log(joinJsonMessage);
-      if (joinJsonMessage.users) {
-        setIsJoined(true);
-        setUserCount(joinJsonMessage.users);
-      }
-      else
+      try {
+        console.log(ev.data);
+        const joinJsonMessage = JSON.parse(ev.data);
+        console.log(joinJsonMessage);
+        if (joinJsonMessage.users) {
+          setIsJoined(true);
+          setUserCount(joinJsonMessage.users);
+        }
+      } catch (error) {
         //@ts-ignore
         setMsg((prevVal) => {
           return [...prevVal, ev.data];
         });
+      }
     };
   }, []);
 
