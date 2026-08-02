@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { socket } from './lib/socket';
 import { Sidebar } from './components/Sidebar';
 import { ChatArea } from './components/ChatArea';
-import { MessageSquare, LogIn } from 'lucide-react';
+import { MessageSquare, LogIn, Loader2 } from 'lucide-react';
 
 export interface User {
   id: string;
@@ -22,6 +22,7 @@ function App() {
   // connection status can be added later
   const [username, setUsername] = useState('');
   const [isRegistered, setIsRegistered] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   
   const [users, setUsers] = useState<User[]>([]);
@@ -82,11 +83,27 @@ function App() {
 
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username.trim()) {
+    if (username.trim() && !isConnecting) {
+      setIsConnecting(true);
       socket.connect();
-      socket.emit('register', username.trim());
-      socket.emit('join_room', 'General');
-      setIsRegistered(true);
+      
+      const onConnect = () => {
+        socket.emit('register', username.trim());
+        socket.emit('join_room', 'General');
+        setIsRegistered(true);
+        setIsConnecting(false);
+        socket.off('connect_error', onConnectError);
+      };
+      
+      const onConnectError = () => {
+        setIsConnecting(false);
+        alert('Failed to connect to the server. Please try again later.');
+        socket.off('connect', onConnect);
+        socket.disconnect();
+      };
+      
+      socket.once('connect', onConnect);
+      socket.once('connect_error', onConnectError);
     }
   };
 
@@ -149,11 +166,20 @@ function App() {
             </div>
             <button
               type="submit"
-              disabled={!username.trim()}
+              disabled={!username.trim() || isConnecting}
               className="w-full bg-white hover:bg-gray-200 text-black font-bold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span>Join Chat</span>
-              <LogIn size={20} />
+              {isConnecting ? (
+                <>
+                  <span>Connecting...</span>
+                  <Loader2 size={20} className="animate-spin" />
+                </>
+              ) : (
+                <>
+                  <span>Join Chat</span>
+                  <LogIn size={20} />
+                </>
+              )}
             </button>
           </form>
         </div>
